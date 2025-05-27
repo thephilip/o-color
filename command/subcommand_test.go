@@ -14,7 +14,7 @@ func Test_ResolveSubcommand(t *testing.T) {
 		conf                   *KubecolorConfig
 		isOutputTerminal       func() bool
 		expectedShouldColorize bool
-		expectedInfo           *kubectl.SubcommandInfo
+		expectedInfo           *kubectl.CLICommandInfo
 	}{
 		{
 			name:             "basic case",
@@ -27,7 +27,7 @@ func Test_ResolveSubcommand(t *testing.T) {
 				KubectlCmd:     "kubectl",
 			},
 			expectedShouldColorize: true,
-			expectedInfo:           &kubectl.SubcommandInfo{Subcommand: kubectl.Get},
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Get},
 		},
 		{
 			name:             "when plain, it won't colorize",
@@ -40,7 +40,7 @@ func Test_ResolveSubcommand(t *testing.T) {
 				KubectlCmd:     "kubectl",
 			},
 			expectedShouldColorize: false,
-			expectedInfo:           &kubectl.SubcommandInfo{Subcommand: kubectl.Get},
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Get},
 		},
 		{
 			name:             "when help, it will colorize",
@@ -53,7 +53,7 @@ func Test_ResolveSubcommand(t *testing.T) {
 				KubectlCmd:     "kubectl",
 			},
 			expectedShouldColorize: true,
-			expectedInfo:           &kubectl.SubcommandInfo{Subcommand: kubectl.Get, Help: true},
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Get, Help: true},
 		},
 		{
 			name:             "when both plain and force, plain is chosen",
@@ -66,7 +66,7 @@ func Test_ResolveSubcommand(t *testing.T) {
 				KubectlCmd:     "kubectl",
 			},
 			expectedShouldColorize: false,
-			expectedInfo:           &kubectl.SubcommandInfo{Subcommand: kubectl.Get},
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Get},
 		},
 		{
 			name:             "when no subcommand is found, it becomes help",
@@ -79,7 +79,7 @@ func Test_ResolveSubcommand(t *testing.T) {
 				KubectlCmd:     "kubectl",
 			},
 			expectedShouldColorize: true,
-			expectedInfo:           &kubectl.SubcommandInfo{Help: true},
+			expectedInfo:           &kubectl.CLICommandInfo{Help: true},
 		},
 		{
 			name:             "when the internal argument is found, it won't colorize",
@@ -92,7 +92,7 @@ func Test_ResolveSubcommand(t *testing.T) {
 				KubectlCmd:     "kubectl",
 			},
 			expectedShouldColorize: false,
-			expectedInfo:           &kubectl.SubcommandInfo{Subcommand: kubectl.Get},
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Get},
 		},
 		{
 			name:             "when not tty, it won't colorize",
@@ -105,7 +105,7 @@ func Test_ResolveSubcommand(t *testing.T) {
 				KubectlCmd:     "kubectl",
 			},
 			expectedShouldColorize: false,
-			expectedInfo:           &kubectl.SubcommandInfo{Subcommand: kubectl.Get},
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Get},
 		},
 		{
 			name:             "even if not tty, if force, it colorizes",
@@ -118,10 +118,66 @@ func Test_ResolveSubcommand(t *testing.T) {
 				KubectlCmd:     "kubectl",
 			},
 			expectedShouldColorize: true,
-			expectedInfo:           &kubectl.SubcommandInfo{Subcommand: kubectl.Get},
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Get},
 		},
 		{
-			name:             "when the subcommand is unsupported, it won't colorize",
+			name:             "kubectl edit is unsupported",
+			args:             []string{"edit", "deployment"},
+			isOutputTerminal: func() bool { return true },
+			conf:             &KubecolorConfig{},
+			expectedShouldColorize: false,
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Edit},
+		},
+		{
+			name:             "oc projects is supported",
+			args:             []string{"projects"},
+			isOutputTerminal: func() bool { return true },
+			conf:             &KubecolorConfig{},
+			expectedShouldColorize: true,
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Projects},
+		},
+		{
+			name:             "oc status is supported",
+			args:             []string{"status"},
+			isOutputTerminal: func() bool { return true },
+			conf:             &KubecolorConfig{},
+			expectedShouldColorize: true,
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Status},
+		},
+		{
+			name:             "oc new-project is unsupported",
+			args:             []string{"new-project", "myproject"},
+			isOutputTerminal: func() bool { return true },
+			conf:             &KubecolorConfig{},
+			expectedShouldColorize: false,
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.NewProject},
+		},
+		{
+			name:             "oc new-app is unsupported",
+			args:             []string{"new-app", "nginx"},
+			isOutputTerminal: func() bool { return true },
+			conf:             &KubecolorConfig{},
+			expectedShouldColorize: false,
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.NewApp},
+		},
+		{
+			name:             "oc routes is supported",
+			args:             []string{"routes"},
+			isOutputTerminal: func() bool { return true },
+			conf:             &KubecolorConfig{},
+			expectedShouldColorize: true,
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Routes},
+		},
+		{
+			name:             "oc policy is unsupported",
+			args:             []string{"policy", "add-role-to-user", "edit", "user1"},
+			isOutputTerminal: func() bool { return true },
+			conf:             &KubecolorConfig{},
+			expectedShouldColorize: false,
+			expectedInfo:           &kubectl.CLICommandInfo{Subcommand: kubectl.Policy},
+		},
+		{
+			name:             "when the subcommand is just -h (help), it will colorize",
 			args:             []string{"-h"},
 			isOutputTerminal: func() bool { return true },
 			conf: &KubecolorConfig{
@@ -131,7 +187,7 @@ func Test_ResolveSubcommand(t *testing.T) {
 				KubectlCmd:     "kubectl",
 			},
 			expectedShouldColorize: true,
-			expectedInfo:           &kubectl.SubcommandInfo{Help: true},
+			expectedInfo:           &kubectl.CLICommandInfo{Help: true},
 		},
 	}
 	for _, tt := range tests {

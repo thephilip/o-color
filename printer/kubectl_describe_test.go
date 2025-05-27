@@ -181,6 +181,45 @@ func Test_DescribePrinter_Print(t *testing.T) {
 				[36mNo LimitRange resource.[0m
 			`),
 		},
+		{
+			name:           "oc describe route",
+			darkBackground: true,
+			tablePrinter:   NewTablePrinter(false, true, nil), // Assuming some parts might be table-like or for consistency
+			input: testutil.NewHereDoc(`
+Name:           my-route
+Namespace:      my-project
+Labels:         app=my-app
+Annotations:    haproxy.router.openshift.io/balance=roundrobin
+Requested Host: www.example.com
+Path:           /
+TLS Termination: edge (passthrough is also an option)
+Service:        my-service (100%)
+Weight:         100
+Endpoints:      10.128.0.1:8080, 10.128.0.2:8080
+Ingress:        (subdomain)/my-route admitted by router-1 (host router-1.example-apps.com)
+  Service: my-service (10.128.0.1:8080,10.128.0.2:8080)
+    Host: www.example.com (my-route) (serves all traffic)
+    Path: / (all traffic)
+    TLS Termination: reencrypt
+`),
+			expected: testutil.NewHereDoc(`
+[33mName[0m:           [32mmy-route[0m
+[33mNamespace[0m:      [36mmy-project[0m
+[33mLabels[0m:         [36mapp=my-app[0m
+[33mAnnotations[0m:    [36mhaproxy.router.openshift.io/balance=roundrobin[0m
+[33mRequested Host[0m: [32mwww.example.com[0m
+[33mPath[0m:           [36m/[0m
+[33mTLS Termination[0m: [34medge[0m [36m(passthrough is also an option)[0m
+[33mService[0m:        [32mmy-service[0m [36m(100%)[0m
+[33mWeight[0m:         [35m100[0m
+[33mEndpoints[0m:      [36m10.128.0.1:8080[0m[97m,[0m [36m10.128.0.2:8080[0m
+[33mIngress[0m:        [36m(subdomain)/my-route admitted by router-1 (host router-1.example-apps.com)[0m
+  [37mService[0m: [32mmy-service[0m [36m(10.128.0.1:8080,10.128.0.2:8080)[0m
+    [37mHost[0m: [32mwww.example.com[0m [36m(my-route) (serves all traffic)[0m
+    [37mPath[0m: [36m/ (all traffic)[0m
+    [33mTLS Termination[0m: [33mreencrypt[0m
+`),
+		},
 	}
 	for _, tt := range tests {
 		tt := tt

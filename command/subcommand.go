@@ -13,9 +13,9 @@ var isOutputTerminal = func() bool {
 	return isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
 }
 
-func ResolveSubcommand(args []string, config *KubecolorConfig) (bool, *kubectl.SubcommandInfo) {
+func ResolveSubcommand(args []string, config *KubecolorConfig) (bool, *kubectl.CLICommandInfo) {
 	// subcommandFound becomes false when subcommand is not found; e.g. "kubecolor --help"
-	subcommandInfo, subcommandFound := kubectl.InspectSubcommandInfo(args)
+	subcommandInfo, subcommandFound := kubectl.InspectCLICommandInfo(args)
 
 	// if --plain found, it does not colorize
 	if config.Plain {
@@ -50,9 +50,9 @@ func ResolveSubcommand(args []string, config *KubecolorConfig) (bool, *kubectl.S
 	return subcommandFound && isColoringSupported(subcommandInfo.Subcommand), subcommandInfo
 }
 
-func isColoringSupported(sc kubectl.Subcommand) bool {
+func isColoringSupported(sc kubectl.CLICommand) bool {
 	// when you add something here, it won't be colorized
-	unsupported := []kubectl.Subcommand{
+	unsupported := []kubectl.CLICommand{
 		kubectl.Create,
 		kubectl.Debug,
 		kubectl.Delete,
@@ -67,6 +67,10 @@ func isColoringSupported(sc kubectl.Subcommand) bool {
 		kubectl.Run,
 		kubectl.Ctx,
 		kubectl.Ns,
+		// oc commands
+		kubectl.NewProject,
+		kubectl.NewApp,
+		kubectl.Policy,
 	}
 
 	for _, u := range unsupported {

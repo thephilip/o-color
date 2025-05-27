@@ -12,7 +12,7 @@ import (
 // KubectlOutputColoredPrinter is a printer to print data depending on
 // which kubectl subcommand is executed.
 type KubectlOutputColoredPrinter struct {
-	SubcommandInfo *kubectl.SubcommandInfo
+	SubcommandInfo *kubectl.CLICommandInfo
 	DarkBackground bool
 	Recursive      bool
 }
@@ -101,6 +101,8 @@ func (kp *KubectlOutputColoredPrinter) Print(r io.Reader, w io.Writer) {
 		default:
 			printer = &ApplyPrinter{DarkBackground: kp.DarkBackground}
 		}
+	case kubectl.Status: // oc status
+		printer = &OpenShiftStatusPrinter{DarkBackground: kp.DarkBackground}
 	}
 
 	if kp.SubcommandInfo.Help {
