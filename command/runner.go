@@ -26,7 +26,7 @@ type Printers struct {
 }
 
 // This is defined here to be replaced in test
-var getPrinters = func(subcommandInfo *kubectl.SubcommandInfo, darkBackground bool) *Printers {
+var getPrinters = func(subcommandInfo *kubectl.CLICommandInfo, darkBackground bool) *Printers {
 	return &Printers{
 		FullColoredPrinter: &printer.KubectlOutputColoredPrinter{
 			SubcommandInfo: subcommandInfo,

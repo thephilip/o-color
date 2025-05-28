@@ -4,8 +4,8 @@ import (
 	"strings"
 )
 
-type SubcommandInfo struct {
-	Subcommand   Subcommand
+type CLICommandInfo struct {
+	Subcommand   CLICommand
 	FormatOption FormatOption
 	NoHeader     bool
 	Watch        bool
@@ -14,6 +14,7 @@ type SubcommandInfo struct {
 	Short        bool
 
 	IsKrew bool
+	Args   []string
 }
 
 type FormatOption int
@@ -25,10 +26,10 @@ const (
 	Yaml
 )
 
-type Subcommand int
+type CLICommand int
 
 const (
-	Create Subcommand = iota + 1
+	Create CLICommand = iota + 1
 	Expose
 	Run
 	Set
@@ -73,9 +74,16 @@ const (
 	Ctx
 	Ns
 	Debug
+	// oc commands
+	Projects
+	Status
+	NewProject
+	NewApp
+	Routes
+	Policy
 )
 
-var strToSubcommand = map[string]Subcommand{
+var strToCLICommand = map[string]CLICommand{
 	"create":        Create,
 	"expose":        Expose,
 	"run":           Run,
@@ -121,15 +129,22 @@ var strToSubcommand = map[string]Subcommand{
 	"ctx":           Ctx,
 	"ns":            Ns,
 	"debug":         Debug,
+	// oc commands
+	"projects":    Projects,
+	"status":      Status,
+	"new-project": NewProject,
+	"new-app":     NewApp,
+	"routes":      Routes,
+	"policy":      Policy,
 }
 
-func InspectSubcommand(command string) (Subcommand, bool) {
-	sc, ok := strToSubcommand[command]
+func InspectCLICommand(command string) (CLICommand, bool) {
+	sc, ok := strToCLICommand[command]
 
 	return sc, ok
 }
 
-func CollectCommandlineOptions(args []string, info *SubcommandInfo) {
+func CollectCommandlineOptions(args []string, info *CLICommandInfo) {
 	for i := range args {
 		if strings.HasPrefix(args[i], "--output") {
 			switch args[i] {
@@ -202,13 +217,13 @@ func CollectCommandlineOptions(args []string, info *SubcommandInfo) {
 }
 
 // TODO: return shouldColorize = false when the given args is for plugin
-func InspectSubcommandInfo(args []string) (*SubcommandInfo, bool) {
-	ret := &SubcommandInfo{}
+func InspectCLICommandInfo(args []string) (*CLICommandInfo, bool) {
+	ret := &CLICommandInfo{Args: args} // Store original args
 
 	CollectCommandlineOptions(args, ret)
 
 	for i := range args {
-		cmd, ok := InspectSubcommand(args[i])
+		cmd, ok := InspectCLICommand(args[i])
 		if !ok {
 			continue
 		}

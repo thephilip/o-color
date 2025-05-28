@@ -49,6 +49,44 @@ func Test_ResolveConfig(t *testing.T) {
 				KubectlCmd:     "kubectl.1.19",
 			},
 		},
+		{
+			name:         "use-oc-cli flag",
+			args:         []string{"get", "pods", "--use-oc-cli"},
+			expectedArgs: []string{"get", "pods"},
+			expectedConf: &KubecolorConfig{
+				Plain:          false,
+				DarkBackground: true,
+				ForceColor:     false,
+				KubectlCmd:     "oc",
+				UseOcCli:       true,
+			},
+		},
+		{
+			name:           "KUBECTL_COMMAND with use-oc-cli flag",
+			args:           []string{"get", "pods", "--use-oc-cli"},
+			kubectlCommand: "customkubectl",
+			expectedArgs:   []string{"get", "pods"},
+			expectedConf: &KubecolorConfig{
+				Plain:          false,
+				DarkBackground: true,
+				ForceColor:     false,
+				KubectlCmd:     "oc",
+				UseOcCli:       true,
+			},
+		},
+		{
+			name:           "KUBECTL_COMMAND without use-oc-cli flag",
+			args:           []string{"get", "pods"},
+			kubectlCommand: "customkubectl",
+			expectedArgs:   []string{"get", "pods"},
+			expectedConf: &KubecolorConfig{
+				Plain:          false,
+				DarkBackground: true,
+				ForceColor:     false,
+				KubectlCmd:     "customkubectl",
+				UseOcCli:       false,
+			},
+		},
 	}
 	for _, tt := range tests {
 		tt := tt

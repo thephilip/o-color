@@ -8,6 +8,7 @@ type KubecolorConfig struct {
 	ForceColor           bool
 	ShowKubecolorVersion bool
 	KubectlCmd           string
+	UseOcCli             bool
 }
 
 func ResolveConfig(args []string) ([]string, *KubecolorConfig) {
@@ -15,12 +16,17 @@ func ResolveConfig(args []string) ([]string, *KubecolorConfig) {
 	args, lightBackgroundFlagFound := findAndRemoveBoolFlagIfExists(args, "--light-background")
 	args, forceColorFlagFound := findAndRemoveBoolFlagIfExists(args, "--force-colors")
 	args, kubecolorVersionFlagFound := findAndRemoveBoolFlagIfExists(args, "--kubecolor-version")
+	args, useOcCliFlagFound := findAndRemoveBoolFlagIfExists(args, "--use-oc-cli")
 
 	darkBackground := !lightBackgroundFlagFound
 
 	kubectlCmd := "kubectl"
-	if kc := os.Getenv("KUBECTL_COMMAND"); kc != "" {
-		kubectlCmd = kc
+	if useOcCliFlagFound {
+		kubectlCmd = "oc"
+	} else {
+		if kc := os.Getenv("KUBECTL_COMMAND"); kc != "" {
+			kubectlCmd = kc
+		}
 	}
 
 	return args, &KubecolorConfig{
@@ -29,6 +35,7 @@ func ResolveConfig(args []string) ([]string, *KubecolorConfig) {
 		ForceColor:           forceColorFlagFound,
 		ShowKubecolorVersion: kubecolorVersionFlagFound,
 		KubectlCmd:           kubectlCmd,
+		UseOcCli:             useOcCliFlagFound,
 	}
 }
 

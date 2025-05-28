@@ -13,14 +13,14 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 	tests := []struct {
 		name           string
 		darkBackground bool
-		subcommandInfo *kubectl.SubcommandInfo
+		subcommandInfo *kubectl.CLICommandInfo
 		input          string
 		expected       string
 	}{
 		{
 			name:           "kubectl top pod",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Top,
 			},
 			input: testutil.NewHereDoc(`
@@ -38,7 +38,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl top pod --no-headers",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Top,
 				NoHeader:   true,
 			},
@@ -55,7 +55,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl api-resources",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.APIResources,
 			},
 			input: testutil.NewHereDoc(`
@@ -98,7 +98,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl api-resources --no-headers",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.APIResources,
 				NoHeader:   true,
 			},
@@ -140,7 +140,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl get pod",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Get,
 			},
 			input: testutil.NewHereDoc(`
@@ -158,7 +158,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl get pod",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Get,
 			},
 			input: testutil.NewHereDoc(`
@@ -176,7 +176,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl get pod --no-headers",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Get,
 				NoHeader:   true,
 			},
@@ -193,7 +193,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl get pod -o wide",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand:   kubectl.Get,
 				FormatOption: kubectl.Wide,
 			},
@@ -212,7 +212,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl get pod -o json",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand:   kubectl.Get,
 				FormatOption: kubectl.Json,
 			},
@@ -237,7 +237,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl get pod -o yaml",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand:   kubectl.Get,
 				FormatOption: kubectl.Yaml,
 			},
@@ -260,7 +260,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl describe pod",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Describe,
 			},
 			input: testutil.NewHereDoc(`
@@ -286,7 +286,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl api-versions",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.APIVersions,
 			},
 			input: testutil.NewHereDoc(`
@@ -330,7 +330,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl explain",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Explain,
 			},
 			input: testutil.NewHereDoc(`
@@ -367,7 +367,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl version",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Version,
 			},
 			input: testutil.NewHereDoc(`
@@ -381,7 +381,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl version --client",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Version,
 			},
 			input: testutil.NewHereDoc(`
@@ -393,7 +393,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl version --short",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Version,
 				Short:      true,
 			},
@@ -408,7 +408,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl version --short --client",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Version,
 				Short:      true,
 			},
@@ -421,7 +421,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl options",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand: kubectl.Options,
 			},
 			input: testutil.NewHereDoc(`
@@ -458,7 +458,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl apply -o json",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand:   kubectl.Apply,
 				FormatOption: kubectl.Json,
 			},
@@ -493,7 +493,7 @@ func Test_KubectlOutputColoredPrinter_Print(t *testing.T) {
 		{
 			name:           "kubectl apply -o yaml",
 			darkBackground: true,
-			subcommandInfo: &kubectl.SubcommandInfo{
+			subcommandInfo: &kubectl.CLICommandInfo{
 				Subcommand:   kubectl.Apply,
 				FormatOption: kubectl.Yaml,
 			},
