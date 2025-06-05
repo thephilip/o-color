@@ -19,26 +19,35 @@ type DescribePrinter struct {
 var (
 	routeDetectionKeywords = []string{"Requested Host:", "TLS Termination:", "Ingress:"} // Keywords highly specific to routes for detection
 	routeSpecificKeys      = map[string]bool{
-		"Name:":           true,
-		"Namespace:":      true,
-		"Created:":        true,
-		"Labels:":         true,
-		"Annotations:":    true,
-		"Requested Host:": true,
-		"Path:":           true,
+		"Name:":            true,
+		"Namespace:":       true,
+		"Created:":         true,
+		"Labels:":          true,
+		"Annotations:":     true,
+		"Requested Host:":  true,
+		"Path:":            true,
 		"TLS Termination:": true,
-		"Service:":        true,
-		"Weight:":         true,
-		"Endpoints:":      true,
-		"Ingress:":        true,
+		"Service:":         true,
+		"Weight:":          true,
+		"Endpoints:":       true,
+		"Ingress:":         true,
 	}
-	routeKeyColor           = color.Yellow
-	routeResourceNameColor  = color.Green
-	routeEndpointColor      = color.Cyan
-	routeTLSColorEdge       = color.Blue
-	routeTLSColorPassthrough= color.Yellow
-	routeTLSColorReencrypt  = color.Yellow
-	routeCommaColor         = color.White
+	routeKeyColor            = color.Yellow
+	routeResourceNameColor   = color.Green
+	routeEndpointColor       = color.Cyan
+	routeTLSColorEdge        = color.Blue
+	routeTLSColorPassthrough = color.Yellow
+	routeTLSColorReencrypt   = color.Yellow
+	routeCommaColor          = color.White
+
+	// aliases for backward compatibility with older variable names
+	ocRouteKeyColor            = routeKeyColor
+	ocRouteResourceNameColor   = routeResourceNameColor
+	ocRouteEndpointColor       = routeEndpointColor
+	ocRouteTLSColorEdge        = routeTLSColorEdge
+	ocRouteTLSColorPassthrough = routeTLSColorPassthrough
+	ocRouteTLSColorReencrypt   = routeTLSColorReencrypt
+	ocRouteCommaColor          = routeCommaColor
 )
 
 func (dp *DescribePrinter) Print(r io.Reader, w io.Writer) {
@@ -108,6 +117,11 @@ func (dp *DescribePrinter) Print(r io.Reader, w io.Writer) {
 			}
 		}
 
+		spacesCnt := 0
+		if len(spacesIndices) > 0 {
+			spacesCnt = spacesIndices[0][1] - spacesIndices[0][0]
+		}
+
 		// when there are multiple columns, treat is as table format
 		if len(columns) > 2 {
 			dp.TablePrinter.printLineAsTableFormat(w, line, getColorsByBackground(dp.DarkBackground))
@@ -122,22 +136,22 @@ func (dp *DescribePrinter) Print(r io.Reader, w io.Writer) {
 		}
 
 		if isRoute && len(columns) > 0 {
-			keyPart := columns[0] 
+			keyPart := columns[0]
 			// Trim space for map lookups and switch, but preserve original keyPart for printing if needed.
 			trimmedSpaceKeyPart := strings.TrimSpace(keyPart)
 			// For map lookups, ensure the key has a colon if it's a primary field.
 			// This logic assumes routeSpecificKeys stores keys exactly as they appear, e.g. "Name:", "  Host:"
-			keyForMapLookup := keyPart 
-			
+			keyForMapLookup := keyPart
+
 			// Override Key Color for Routes
-			if _, ok := routeSpecificKeys[keyForMapLookup]; ok { 
-				effectiveKeyColor = ocRouteKeyColor 
-			} else if indentCnt > basicIndentWidth { 
+			if _, ok := routeSpecificKeys[keyForMapLookup]; ok {
+				effectiveKeyColor = ocRouteKeyColor
+			} else if indentCnt > basicIndentWidth {
 				// For indented keys within a route section (e.g. "Host:" under "Ingress:")
 				// If the space-trimmed version (e.g. "Host:") is in our specific map, use route key color.
 				// This allows routeSpecificKeys to define "Host:" for sub-sections without leading spaces.
 				if _, okSubKey := routeSpecificKeys[trimmedSpaceKeyPart+":"]; okSubKey {
-					effectiveKeyColor = ocRouteKeyColor 
+					effectiveKeyColor = ocRouteKeyColor
 				} else {
 					// Otherwise, use generic indentation logic for unknown sub-keys.
 					effectiveKeyColor = getColorByKeyIndent(indentCnt, basicIndentWidth+1, dp.DarkBackground)
@@ -152,10 +166,10 @@ func (dp *DescribePrinter) Print(r io.Reader, w io.Writer) {
 				switch strings.TrimSuffix(trimmedSpaceKeyPart, ":") {
 				case "Name", "Requested Host":
 					effectiveValColor = ocRouteResourceNameColor
-				case "Service": 
-					effectiveValColor = ocRouteResourceNameColor 
-				case "Endpoints": 
-					effectiveValColor = ocRouteEndpointColor   
+				case "Service":
+					effectiveValColor = ocRouteResourceNameColor
+				case "Endpoints":
+					effectiveValColor = ocRouteEndpointColor
 				case "TLS Termination":
 					if strings.HasPrefix(strings.ToLower(valuePart), "edge") {
 						effectiveValColor = ocRouteTLSColorEdge
@@ -173,26 +187,25 @@ func (dp *DescribePrinter) Print(r io.Reader, w io.Writer) {
 				effectiveKeyColor = effectiveValColor // Print this line with the value's color
 			}
 		}
-		
+
 		// TODO: Remove this if statement for workaround (Kubectl 1.19.3 bug)
 		// This workaround is for lines like " Resource Used Hard" where "Resource" has one leading space.
 		// The current column splitting logic might already handle this if columns[0] becomes empty and is removed.
 		// If columns[0] is the first word (e.g. "Resource") but indentCnt is 1 due to the bug,
 		// this check might be needed.
 		keyToPrint := columns[0]
-		if indentCnt == 1 && strings.HasPrefix(line, " ") && !strings.HasPrefix(line, "  ") && columns[0]!="" {
+		if indentCnt == 1 && strings.HasPrefix(line, " ") && !strings.HasPrefix(line, "  ") && columns[0] != "" {
 			// Heuristic for the single-space indent bug if columns[0] isn't empty.
 			// If columns[0] is already trimmed by the initial split logic, this specific check might not be needed.
 			// The original code did `columns[0] = strings.TrimLeft(columns[0], " ")` which is more aggressive.
 			// Let's ensure keyToPrint is the actual content intended for the key column.
-		} else if strings.HasPrefix(keyToPrint, " ") && indentCnt > 0 && len(spacesIndices)>0 && spacesIndices[0][0]==0 {
-            // This was the original logic to handle the workaround, let's refine it.
-            // If the first column still has leading spaces AND it's an indented line, trim.
-            // This should ideally be handled by the columns splitting logic or findIndent.
-            // For now, if columns[0] (keyToPrint) has leading spaces and it's not a non-indented line,
-            // it might be an artifact of the split.
-        }
-
+		} else if strings.HasPrefix(keyToPrint, " ") && indentCnt > 0 && len(spacesIndices) > 0 && spacesIndices[0][0] == 0 {
+			// This was the original logic to handle the workaround, let's refine it.
+			// If the first column still has leading spaces AND it's an indented line, trim.
+			// This should ideally be handled by the columns splitting logic or findIndent.
+			// For now, if columns[0] (keyToPrint) has leading spaces and it's not a non-indented line,
+			// it might be an artifact of the split.
+		}
 
 		// Apply coloring to the key part that will be printed
 		// Use the original columns[0] for TrimRight because keyToPrint might have been trimmed.
@@ -269,7 +282,7 @@ func (dp *DescribePrinter) Print(r io.Reader, w io.Writer) {
 				continue
 			}
 		}
-		
+
 		// Default key-value printing if no special route handling took over or if not a route
 		fmt.Fprintf(w, "%s%s%s%s\n", indent, coloredKeyOutput, toSpaces(spacesCnt), color.Apply(valueOutput, effectiveValColor))
 	}
